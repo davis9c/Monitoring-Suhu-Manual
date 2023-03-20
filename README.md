@@ -6,3 +6,4 @@
 terdapat joystik untuk menavigas berpindah halaman, dari halaman Home> Suhu> Kelembaban> Heating Index.
 namun joystik masih difungsikan hanya pushbutton.
 namun kedepannya akan digunakan untuk navigasi sistem menu untuk mengatur kalibrasi dan sejenisnya
+https://youtu.be/zTPPqizNJsg
