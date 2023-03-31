@@ -3,55 +3,82 @@ void master_ssd1306(){
   display.setTextSize(1);      // Normal 1:1 pixel scale
   display.setTextColor(SSD1306_WHITE); // Draw white text
   display.setCursor(0, 0);
-
+  String dataList[6];
   display.print(page);
-  switch(1){
-    case 1:
+  display.print(selector);
+  switch(page){
+    case 1://Halaman Home
       display.print(" Home");
-      ssd1306_grafik( dhtLogH, (sizeof(dhtLogH)/sizeof(dhtLogH[0])) ,100,25, 0,10,false);
-      ssd1306_grafik( dhtLogT, (sizeof(dhtLogT)/sizeof(dhtLogT[0])) ,100,25, 0,36,false);
-      //ssd1306_Home(dhtLogT, (sizeof(dhtLogT) / sizeof(dhtLogT[0]) ),dhtLogH, (sizeof(dhtLogH) / sizeof(dhtLogH[0]) ));
+      ssd1306_grafik( dhtLogH, dhtLog ,100,25, 0,10,false);
+      ssd1306_grafik( dhtLogT, dhtLog ,100,25, 0,36,false);
       break;
-    case 2:
+    case 2://Halaman Suhu
       display.print(" Suhu (*C)");
-      ssd1306_grafik( dhtLogT, (sizeof(dhtLogT)/sizeof(dhtLogT[0])) ,100,37, 0,18, true);
+      ssd1306_grafik( dhtLogT, dhtLog ,100,37, 0,18, true);
       break;
-    case 3:
+    case 21://Halaman Suhu > Detail
+      display.println(" (i)Suhu");
+      dataList[0]= String((float)dhtLogT[(dhtLog-1)]/10,1);
+      dataList[1]= String((float)dhtLogTCal/10,1);
+      dataList[2]= String(-0.1);
+      dataList[3]= String(true);
+      dataList[4]= String(50.1);
+      dataList[5]= String((float)1/10,1);
+      dataList[6]= "<<";
+      daftarPilih(dataList,7);
+      break;
+    case 3://Halaman Humid
       display.print(" Humid (%rH)");
-      ssd1306_grafik( dhtLogH, (sizeof(dhtLogH)/sizeof(dhtLogH[0])) ,100,37, 0,18,true);
+      ssd1306_grafik( dhtLogH, dhtLog ,100,37, 0,18,true);
       break;
-    case 4:
-      display.print(" Heat Index");
-      ssd1306_grafik( dhtLogHI, (sizeof(dhtLogHI)/sizeof(dhtLogHI[0])) ,100,37, 0,18,true);
+    case 31://Halaman Kelembaban > Detail
+      display.println(" (i)Kelembaban");
+      float kelembaban = ( dhtLogH[(dhtLog-1)] - dhtLogHCal );
+      float kalibrasi = dhtLogHCal;
+      dataList[0]= String( (float)(kelembaban-kalibrasi)/10, 1 ) + " | " + String( (float)calHBuff/10, 1 );
+      dataList[1]= String( (float)kalibrasi/10, 1);
+      dataList[2]= String(-0.1, 1);
+      dataList[3]= String(true);
+      dataList[4]= String(50.1, 1);
+      dataList[5]= String((float)1/10, 1);
+      dataList[6]= "<<";
+      daftarPilih(dataList,7);break;
+    case 4://Halaman Heat Index
+      display.print(" Heat Index C");
+      ssd1306_grafik( dhtLogHI, dhtLog ,100,37, 0,18,true);
       break;
-    default:
-    break;
+    case 5://Halaman About
+      display.print(" About");
+      break;
   }
-  
   display.display();
   displayUpdate = false;
 }
-void ssd1306_Home(int T[0],byte nT,int H[0],byte nH){
-  display.setTextSize(2);
-  display.println(F(""));
-  display.setCursor(10, 18);
-  display.print((float)T[nT-1]/10,1);display.println(F(" 'C"));
-  display.setCursor(10, 35);
-  display.print((float)H[nH-1]/10,1);display.println(F(" %rH"));
+void daftarPilih(String data[],byte n){
+  for(uint8_t i=0; i<n; i++) {
+    if( i+1 == selector ){
+      display.setTextColor(BLACK, WHITE);
+      display.print(">");
+    }else{
+      display.setTextColor(WHITE );
+      display.print(" ");
+    }
+    display.println(data[i]);
+  }
+  
 }
-void ssd1306_grafik(int angkaData[0],byte n, byte grafikL,byte grafikT, byte frameX, byte frameY, bool label){
+void ssd1306_grafik(int angkaData[0],uint8_t n, uint8_t grafikL,uint8_t grafikT, uint8_t frameX, uint8_t frameY, bool label){
   int maxVal = angkaData[0];
   int minVal = angkaData[0];
-  for (int16_t i = 0; i < n; i++) {
+  for (uint8_t i = 0; i < n; i++) {
     maxVal = max(angkaData[i],maxVal);
     minVal = min(angkaData[i],minVal);
   }
-  int jarakAntarTitik = grafikL/n;
-  int x0,y0,x1,y1;
-  for(int16_t i=0; i<n-1; i++) {
-    x0 = (i*jarakAntarTitik)+frameX;
+  uint8_t x0,y0,x1,y1;
+  for(uint8_t i=0; i<n-1; i++) {
+    x0 = (i*(grafikL/n))+frameX;
     y0 = map(angkaData[i],minVal-2,maxVal+2,frameY+grafikT,frameY);
-    x1 = x0+jarakAntarTitik;
+    x1 = x0+(grafikL/n);
     y1 = map(angkaData[i+1],minVal-2,maxVal+2,frameY+grafikT,frameY);  
     display.drawLine( x0, y0, x1 ,y1 , SSD1306_WHITE);
   }

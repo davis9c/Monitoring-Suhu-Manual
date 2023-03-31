@@ -3,18 +3,17 @@
 #define DHTTYPE DHT22
 DHT dht(DHTPIN, DHTTYPE);
 unsigned long mlsOfDHT = 0;
-int dhtLogT[20];
-int dhtLogH[20];
-int dhtLogHI[20];
+uint8_t dhtLog = 5;
+int dhtLogT[5], dhtLogTCal = 1,calHBuff=0;
+int dhtLogH[5], dhtLogHCal = 1;
+int dhtLogHI[5];
 
 #include "AMJoystick.h"
 AMJoystick Joystick(A0, A1, 2);
 int readX;
 int readY;
-bool readButton;
-bool readUp, readDown, readLeft, readRight;
 unsigned long mlsOfJoystickUpdate = 0;
-bool joystickUpdate = false;
+bool joystickReady = true;
 
 #include <SPI.h>
 #include <Wire.h>
@@ -61,6 +60,7 @@ static const unsigned char PROGMEM logo[] =
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
 
 int page = 1;
+int selector = 1;
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
@@ -68,10 +68,6 @@ void setup() {
   dht.begin();
   
 
-  readX = 0;
-  readY = 0;
-  readButton = false;
-  readUp = false; readDown = false; readLeft = false; readRight= false;
 
   if(!display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)) {
     Serial.println(F("SSD1306 allocation failed"));
